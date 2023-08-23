@@ -1,7 +1,7 @@
 from django.core.exceptions import ValidationError
 from parameterized import parameterized
 
-from .test_recipe_base import RecipeTestBase
+from .test_recipe_base import Recipe, RecipeTestBase
 
 
 class RecipeModelTest(RecipeTestBase):
@@ -15,7 +15,25 @@ class RecipeModelTest(RecipeTestBase):
 
         with self.assertRaises(ValidationError):
             self.recipe.full_clean() #Aqui a validação de limite de caracter ocorre
-        
+
+    def make_recipe_no_defaults(self):
+        recipe = Recipe(
+                    category=self.make_category(name='Test Default Category'), 
+                    author=self.make_author(username='newUser'),
+                    title='Titulo',
+                    description='Recipe-description', 
+                    slug='Recipe-slug',
+                    preparation_time=1,
+                    preparation_time_unit='minutos',
+                    servings=5,
+                    servings_unit='pratos',
+                    preparation_steps=5,
+                    cover='cover'
+        )
+        recipe.full_clean()
+        recipe.save
+        return recipe
+
     #Usado para testes que necessitam de FOR
     @parameterized.expand([
             ('title', 65),
@@ -28,3 +46,18 @@ class RecipeModelTest(RecipeTestBase):
         setattr(self.recipe, field, 'A' * (max_lenght + 1))
         with self.assertRaises(ValidationError):
             self.recipe.full_clean() 
+
+    def test_recipe_preparation_steps_is_html_is_false_by_default(self):
+        recipe = self.make_recipe_no_defaults()
+        self.assertFalse(
+            recipe.preparation_steps_is_html,
+            msg="Recipe preparation steps is not false"
+        )
+
+    def test_recipe_is_published_is_false_by_default(self):
+        recipe = self.make_recipe_no_defaults()
+        self.assertFalse(
+            recipe.is_published,
+            msg="Recipe is published is not false"
+        )
+    
