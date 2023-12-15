@@ -12,6 +12,7 @@ def register_view(request):
     return render (request, 'authors/pages/register_view.html', {
         'form': form,
     })
+    
 
 def register_create(request):
     if not request.POST:
